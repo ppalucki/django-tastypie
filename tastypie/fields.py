@@ -450,7 +450,7 @@ class RelatedField(ApiField):
         is a callable, and returns ``True``, the field will be included during
         dehydration.
         Defaults to ``all``.
-        
+
         Optionally accepts a ``full_list``, which indicated whether or not
         data should be fully dehydrated when the request is for a list of
         resources. Accepts ``True``, ``False`` or a callable that accepts
@@ -672,7 +672,19 @@ class RelatedField(ApiField):
         """
         should_dehydrate_full_resource = False
         if self.full:
-            is_details_view = resolve(bundle.request.path).url_name == "api_dispatch_detail"
+
+            # handling for django 1.2
+            # resolve retuns just triple of (function, args, kwargs)
+            # urlname is unknown
+            # so we unwrapping both decrators to get to clousured view (str) variable
+            # more info:
+            # https://docs.djangoproject.com/en/1.3/topics/http/urls/#django.core.urlresolvers.resolve
+            unwrapped_func_name = resolve(bundle.request.path)[0].func_closure[0].cell_contents.func_closure[0].cell_contents.func_closure[1].cell_contents
+            is_details_view = unwrapped_func_name == 'dispatch_detail'
+
+            # original code for django 1.3+
+            # is_details_view = resolve(bundle.request.path).url_name == "api_dispatch_detail"
+
             if is_details_view:
                 if (not callable(self.full_detail) and self.full_detail) or (callable(self.full_detail) and self.full_detail(bundle)):
                     should_dehydrate_full_resource = True
