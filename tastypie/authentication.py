@@ -6,10 +6,14 @@ import uuid
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.core.exceptions import ImproperlyConfigured
-from django.middleware.csrf import _sanitize_token, constant_time_compare
+from django.middleware.csrf import _sanitize_token # , constant_time_compare - there is no such function in django12
 from django.utils.http import same_origin
 from django.utils.translation import ugettext as _
 from tastypie.http import HttpUnauthorized
+
+# reimplementation of function for django12
+def constant_time_compare(x, y):
+    return x==y
 
 try:
     from hashlib import sha1
